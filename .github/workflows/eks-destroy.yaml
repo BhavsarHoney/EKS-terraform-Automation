@@ -2,11 +2,12 @@
 name: EKS Terraform Destroy
 
 on:
+  schedule:
+    - cron: "57 12 * * 1"
   workflow_dispatch:
 
   # Every Friday at 8:00 PM IST
-  schedule:
-    - cron: "50 12 * * 1"
+  
 
 permissions:
   contents: read

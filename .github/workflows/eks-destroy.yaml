@@ -5,8 +5,8 @@ on:
   workflow_dispatch:
 
   # Every Friday at 8:00 PM IST
-  # schedule:
-  #   - cron: "30 14 * * 5"
+  schedule:
+    - cron: "15 12 * * 1"
 
 permissions:
   id-token: write
@@ -36,7 +36,9 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          # role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
       # 3. Verify AWS identity

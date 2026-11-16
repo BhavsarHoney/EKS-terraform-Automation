@@ -1,0 +1,131 @@
+
+name: EKS Terraform Creation
+
+on:
+  workflow_dispatch:
+
+  # Monday at 8:00 AM IST
+  # schedule:
+  #   - cron: "30 2 * * 1"
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: eks-lifecycle
+  cancel-in-progress: false
+
+jobs:
+  eks-create:
+    name: Create EKS Cluster
+    runs-on: ubuntu-latest
+    environment: eks-create
+
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      TF_WORKING_DIR: ${{ vars.TF_WORKING_DIR }}
+      EKS_CLUSTER_NAME: ${{ vars.EKS_CLUSTER_NAME }}
+      EKS_NODEGROUP_NAME: ${{ vars.EKS_NODEGROUP_NAME }}
+
+    steps:
+      # 1. Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Configure AWS using OIDC
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # 3. Verify AWS identity
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
+      # 4. Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.12.2
+
+      # 5. Terraform Init
+      - name: Terraform Init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init -input=false
+
+      # 6. Terraform Format Check
+      - name: Terraform Format
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform fmt -check -recursive
+
+      # 7. Terraform Validate
+      - name: Terraform Validate
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform validate
+
+      # 8. Terraform Plan
+      - name: Terraform Plan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform plan -input=false -out=tfplan
+
+      # 9. Terraform Apply
+      - name: Terraform Apply
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform apply -input=false -auto-approve tfplan
+
+      # 10. Wait for EKS Cluster
+      - name: Wait for EKS Cluster
+        run: |
+          aws eks wait cluster-active \
+            --name "$EKS_CLUSTER_NAME" \
+            --region "$AWS_REGION"
+
+      # 11. Wait for Managed Node Group
+      - name: Wait for EKS Node Group
+        if: ${{ env.EKS_NODEGROUP_NAME != '' }}
+        run: |
+          aws eks wait nodegroup-active \
+            --cluster-name "$EKS_CLUSTER_NAME" \
+            --nodegroup-name "$EKS_NODEGROUP_NAME" \
+            --region "$AWS_REGION"
+
+      # 12. Verify EKS
+      - name: Verify EKS Cluster
+        run: |
+          aws eks describe-cluster \
+            --name "$EKS_CLUSTER_NAME" \
+            --region "$AWS_REGION" \
+            --query 'cluster.{Name:name,Status:status,Version:version}' \
+            --output table
+
+          aws eks list-nodegroups \
+            --cluster-name "$EKS_CLUSTER_NAME" \
+            --region "$AWS_REGION"
+
+      # 13. Configure kubectl
+      - name: Configure kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --name "$EKS_CLUSTER_NAME" \
+            --region "$AWS_REGION"
+
+      # 14. Verify Kubernetes access
+      - name: Verify Kubernetes
+        run: |
+          kubectl cluster-info
+          kubectl get nodes
+          kubectl get namespaces
+
+      # 15. Pipeline summary
+      - name: Deployment Summary
+        if: always()
+        run: |
+          {
+            echo "## EKS Terraform Creation"
+            echo ""
+            echo "- Cluster: $EKS_CLUSTER_NAME"
+            echo "- Region: $AWS_REGION"
+            echo "- Terraform directory: $TF_WORKING_DIR"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,105 @@
+
+name: EKS Terraform Destroy
+
+on:
+  workflow_dispatch:
+
+  # Every Friday at 8:00 PM IST
+  # schedule:
+  #   - cron: "30 14 * * 5"
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: eks-lifecycle
+  cancel-in-progress: false
+
+jobs:
+  eks-destroy:
+    name: Destroy EKS Cluster
+    runs-on: ubuntu-latest
+    environment: eks-destroy
+
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      TF_WORKING_DIR: ${{ vars.TF_WORKING_DIR }}
+      EKS_CLUSTER_NAME: ${{ vars.EKS_CLUSTER_NAME }}
+
+    steps:
+      # 1. Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Configure AWS credentials using OIDC
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # 3. Verify AWS identity
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
+      # 4. Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.12.2
+
+      # 5. Terraform Init
+      - name: Terraform Init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init -input=false
+
+      # 6. Terraform Format Check
+      - name: Terraform Format
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform fmt -check -recursive
+
+      # 7. Terraform Validate
+      - name: Terraform Validate
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform validate
+
+      # 8. Verify existing EKS cluster
+      - name: Verify EKS Cluster
+        run: |
+          aws eks describe-cluster \
+            --name "$EKS_CLUSTER_NAME" \
+            --region "$AWS_REGION" \
+            --query 'cluster.{Name:name,Status:status}' \
+            --output table
+
+      # 9. Generate Terraform Destroy Plan
+      - name: Terraform Destroy Plan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform plan -destroy -input=false -out=destroy.tfplan
+
+      # 10. Terraform Destroy
+      - name: Terraform Destroy
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform apply -input=false -auto-approve destroy.tfplan
+
+      # 11. Wait for EKS deletion
+      - name: Wait for EKS Deletion
+        run: |
+          aws eks wait cluster-deleted \
+            --name "$EKS_CLUSTER_NAME" \
+            --region "$AWS_REGION"
+
+          echo "EKS cluster successfully deleted."
+
+      # 12. Deployment Summary
+      - name: Destroy Summary
+        if: always()
+        run: |
+          {
+            echo "## EKS Terraform Destroy"
+            echo ""
+            echo "- Cluster: $EKS_CLUSTER_NAME"
+            echo "- Region: $AWS_REGION"
+            echo "- Terraform directory: $TF_WORKING_DIR"
+          } >> "$GITHUB_STEP_SUMMARY"

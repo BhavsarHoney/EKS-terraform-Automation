@@ -30,7 +30,7 @@ variable "cluster_endpoint_public_access" {
   type        = bool
   default     = true
 }
-variable  "authentication_mode"{
+variable "authentication_mode" {
   description = "The authentication mode for the cluster. Valid values: API, CONFIG_MAP, API_AND_CONFIG_MAP."
   type        = string
   default     = "API_AND_CONFIG_MAP"

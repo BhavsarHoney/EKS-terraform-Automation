@@ -9,7 +9,6 @@ on:
     - cron: "15 12 * * 1"
 
 permissions:
-  id-token: write
   contents: read
 
 concurrency:

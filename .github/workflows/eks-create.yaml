@@ -20,7 +20,7 @@ jobs:
   eks-create:
     name: Create EKS Cluster
     runs-on: ubuntu-latest
-    environment: eks-create
+    # environment: eks-create
 
     env:
       AWS_REGION: ${{ vars.AWS_REGION }}

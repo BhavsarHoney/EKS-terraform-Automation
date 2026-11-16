@@ -20,7 +20,7 @@ jobs:
   eks-destroy:
     name: Destroy EKS Cluster
     runs-on: ubuntu-latest
-    environment: eks-destroy
+    # environment: eks-destroy
 
     env:
       AWS_REGION: ${{ vars.AWS_REGION }}

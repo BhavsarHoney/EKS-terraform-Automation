@@ -1,15 +1,54 @@
-name: Schedule Test
+# name: Schedule Test
+
+# on:
+#   workflow_dispatch:
+#   schedule:
+#     - cron: '5 9 * * *'
+
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Verify schedule
+#         run: |
+#           echo "Scheduled workflow triggered"
+#           date -u
+name: Test Scheduled EKS Logic
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: '5 9 * * *'
+    # TEST 1: Replace with a time ~10 mins from now (in UTC)
+    - cron: '30 9 * * *'
+    # TEST 2: Replace with a time ~15 mins from now (in UTC)
+    - cron: '40 9 * * *'
+  workflow_dispatch:
+    inputs:
+      test_action:
+        description: 'Manual test action'
+        required: true
+        type: choice
+        options:
+          - simulate-create
+          - simulate-destroy
 
 jobs:
-  test:
+  test-schedule-job:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify schedule
+      - name: Print Event Details
         run: |
-          echo "Scheduled workflow triggered"
-          date -u
+          echo "Triggered by event: ${{ github.event_name }}"
+          echo "Matched cron string: ${{ github.event.schedule }}"
+          echo "Current UTC time: $(date -u)"
+
+      # Simulates Monday Create
+      - name: Simulate EKS Create
+        if: github.event.schedule == '30 9 * * *' || github.event.inputs.test_action == 'simulate-create'
+        run: |
+          echo "✅ SUCCESS: This step will run terraform apply!"
+
+      # Simulates Friday Destroy
+      - name: Simulate EKS Destroy
+        if: github.event.schedule == '40 9 * * *' || github.event.inputs.test_action == 'simulate-destroy'
+        run: |
+          echo "🗑️ SUCCESS: This step will run terraform destroy!"

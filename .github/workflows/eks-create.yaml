@@ -2,11 +2,12 @@
 name: EKS Terraform Creation
 
 on:
+  schedule:
+    - cron: "25 5 * * 2"
   workflow_dispatch:
 
-  # Monday at 8:00 AM IST
-  # schedule:
-  #   - cron: "30 2 * * 1"
+  # Monday at 8:00 AM IST testing
+ 
 
 permissions:
   # id-token: write

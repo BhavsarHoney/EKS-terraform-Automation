@@ -13,6 +13,12 @@ variable "cluster_version" {
   default = "1.35"
 }
 
+variable "backend_key_prefix" {
+  description = "The prefix for the S3 backend key."
+  type        = string
+  default     = "eks-dynamic/complete"
+}
+
 variable "auto_mode_node_pools" {
   description = "The node pools to enable when EKS Auto Mode is active."
   type        = list(string)

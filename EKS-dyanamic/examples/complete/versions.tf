@@ -14,7 +14,6 @@ terraform {
     region         = "ap-south-1"
     # dynamodb_table = var.backend_dynamodb_table
     encrypt        = true
-    use_locking     = true
-
+    use_locking    = true
   }
 }

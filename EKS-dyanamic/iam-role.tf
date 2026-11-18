@@ -63,7 +63,7 @@ resource "aws_iam_role_policy_attachment" "cluster_networking" {
   policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEKSNetworkingPolicy"
 }
 
- ## Role for EKS Auto Mode Nodes 
+## Role for EKS Auto Mode Nodes 
 resource "aws_iam_role" "auto_mode_node" {
   count = var.automode ? 1 : 0
 

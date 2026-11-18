@@ -16,7 +16,7 @@ variable "cluster_version" {
   default     = "1.36"
 }
 
-variable  private_subnet_ids {
+variable "private_subnet_ids" {
   description = "List of private subnet IDs for the EKS cluster"
   type        = list(string)
 }
@@ -28,8 +28,8 @@ variable "environment" {
 
 variable "Owner" {
   description = "The owner of the EKS cluster."
-    type        = string
-    default     = "platform-team"
+  type        = string
+  default     = "platform-team"
 }
 
 variable "department" {
@@ -47,7 +47,7 @@ variable "subnet_ids" {
   description = "List of subnet IDs for the EKS cluster"
   type        = list(string)
 }
- 
+
 
 variable "cluster_endpoint_private_access" {
   description = "Whether the EKS API endpoint is privately accessible"

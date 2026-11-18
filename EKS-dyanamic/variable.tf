@@ -33,7 +33,7 @@ variable "authentication_mode" {
   }
 }
 
-variable  "admin_access_entry_principals"{
+variable "admin_access_entry_principals" {
   description = "List of IAM principals (users or roles) that should have admin access to the EKS cluster."
   type        = list(string)
   default     = []
@@ -94,7 +94,7 @@ variable "node_ami_type" {
   description = "AMI type for the managed node group."
   type        = string
   default     = "AL2023_x86_64_STANDARD"
-  
+
 }
 variable "node_capacity_type" {
   description = "Capacity type for the managed node group."

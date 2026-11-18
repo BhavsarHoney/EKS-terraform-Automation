@@ -3,7 +3,7 @@ module "eks" {
 
   cluster_name    = var.cluster_name
   cluster_version = var.cluster_version
-  automode = true
+  automode        = true
 
   vpc_id = var.vpc_id
 
@@ -14,7 +14,7 @@ module "eks" {
   tags = {
     Environment = var.environment
     ManagedBy   = "terraform"
-    Owner      = var.owner
-    Department = var.department
+    Owner       = var.owner
+    Department  = var.department
   }
 }

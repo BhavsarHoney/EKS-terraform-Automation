@@ -9,11 +9,11 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "terraform-tfstate-hani"
-    key            = "eks-dynamic/complete/terraform.tfstate"
-    region         = "ap-south-1"
+    bucket = "terraform-tfstate-hani"
+    key    = "eks-dynamic/complete/terraform.tfstate"
+    region = "ap-south-1"
     # dynamodb_table = var.backend_dynamodb_table
-    encrypt        = true
-    use_lockfile   = true
+    encrypt      = true
+    use_lockfile = true
   }
 }

@@ -10,7 +10,7 @@ department = "PES-IA"
 
 vpc_id = "vpc-3973fe50"
 
-subnet_ids = [ 
+subnet_ids = [
   "subnet-061beab7f94c08acb",
   "subnet-07a544dd2e49680d4",
   "subnet-0591c010806e9292f",
@@ -27,7 +27,7 @@ cluster_endpoint_private_access = true
 cluster_endpoint_public_access = true
 
 public_access_cidrs = ["182.76.141.104/29",
- "115.112.142.32/29", 
+  "115.112.142.32/29",
 "14.97.73.248/29"]
 
 authentication_mode = "API_AND_CONFIG_MAP"
